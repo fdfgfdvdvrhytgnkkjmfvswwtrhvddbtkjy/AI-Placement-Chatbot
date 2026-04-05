@@ -56,9 +56,17 @@ def main():
         st.session_state.messages = []
         st.session_state.messages.append({"role": "assistant", "content": "Hello! I'm your AI Placement Assistant. How can I help you today?"})
 
-    # Auto-connect Gemini from .env if not already connected
+    # Auto-connect Gemini from .env or Streamlit Cloud secrets
     if not intent_matcher.is_gemini_active():
-        env_key = os.environ.get("GEMINI_API_KEY", "")
+        # Try Streamlit Cloud secrets first
+        env_key = ""
+        try:
+            env_key = st.secrets.get("GEMINI_API_KEY", "")
+        except Exception:
+            pass
+        # Fallback to .env file
+        if not env_key:
+            env_key = os.environ.get("GEMINI_API_KEY", "")
         if env_key and env_key != "PASTE_YOUR_KEY_HERE":
             intent_matcher.configure_gemini(env_key)
 
