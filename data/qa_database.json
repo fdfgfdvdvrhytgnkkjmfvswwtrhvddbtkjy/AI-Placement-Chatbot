@@ -1,0 +1,94 @@
+{
+  "intents": [
+    {
+      "tag": "greeting",
+      "patterns": ["Hi", "Hello", "Hey", "Good morning", "What's up", "Howdy", "Good evening", "Good afternoon"],
+      "responses": ["Hello! I'm your AI Placement Assistant. How can I help you today?", "Hi there! Ready to prepare for your interviews? Ask me anything about HR, Technical topics, or placement strategies!"]
+    },
+    {
+      "tag": "goodbye",
+      "patterns": ["Bye", "Goodbye", "See you later", "Thanks bye", "OK bye"],
+      "responses": ["Goodbye! Best of luck with your preparation!", "See you later! Keep practicing!"]
+    },
+    {
+      "tag": "thanks",
+      "patterns": ["Thanks", "Thank you", "Thanks a lot", "Appreciate it", "Thank you so much"],
+      "responses": ["You're welcome! Let me know if you have more questions.", "Happy to help! Keep preparing and you'll do great!"]
+    },
+    {
+      "tag": "hr_tell_me_about_yourself",
+      "patterns": ["Tell me about yourself", "Introduce yourself", "How to answer tell me about yourself", "How should I introduce myself in an interview", "Self introduction for interview"],
+      "responses": ["**How to answer 'Tell me about yourself':**\n\nUse the **Present-Past-Future** formula:\n1. **Present:** 'I am a final year B.Tech student specializing in [your branch] at [your college].'\n2. **Past:** 'During my academic journey, I have worked on projects like [project name] and gained skills in [relevant skills].'\n3. **Future:** 'I am looking forward to applying my skills in a challenging role at a company like yours.'\n\n**Tips:** Keep it under 2 minutes. Focus on achievements, not just duties. Tailor it to the company you're interviewing for."]
+    },
+    {
+      "tag": "hr_strengths",
+      "patterns": ["What are your strengths?", "Tell me about your strengths", "What are you good at?", "What is your greatest strength", "Strengths interview question"],
+      "responses": ["**How to answer 'What are your strengths?':**\n\nPick 2-3 strengths that are **relevant to the job** and back each with a real example:\n\n1. **Problem-solving:** 'During my final year project, I encountered a critical database optimization issue. I researched indexing strategies and reduced query time by 60%.'\n2. **Quick learner:** 'I taught myself React.js in 2 weeks to contribute to a hackathon project that won 2nd place.'\n3. **Team player:** 'In our DBMS group project, I coordinated between 4 members and ensured timely delivery.'\n\n**Key Rule:** Always use the **STAR method** (Situation, Task, Action, Result) to back up your claims!"]
+    },
+    {
+      "tag": "hr_weaknesses",
+      "patterns": ["What are your weaknesses?", "Tell me your weakness", "What is your biggest weakness?", "How to answer weakness question", "Weakness interview question"],
+      "responses": ["**How to answer 'What are your weaknesses?':**\n\nThe golden formula: **Real weakness + Active improvement**\n\n**Example:** 'I sometimes focus too much on details, which can delay my work. However, I have started using time-boxing techniques and project management tools like Trello to ensure I meet deadlines while maintaining quality.'\n\n**Never say:**\n- 'I have no weaknesses' (unrealistic)\n- 'I'm a perfectionist' (overused)\n- A critical skill for the job\n\n**Do say:** Something genuine that shows self-awareness and growth mindset."]
+    },
+    {
+      "tag": "hr_why_should_we_hire_you",
+      "patterns": ["Why should we hire you?", "Why are you the best candidate?", "What makes you different?", "Why you?", "Why should we select you"],
+      "responses": ["**How to answer 'Why should we hire you?':**\n\nConnect YOUR skills to THEIR needs:\n\n'I believe I'm a strong fit because:\n1. **Technical Skills:** I have hands-on experience with [relevant tech stack] through my projects.\n2. **Problem-Solving:** My project work demonstrates my ability to tackle real-world challenges.\n3. **Cultural Fit:** I am a collaborative team player who thrives in fast-paced environments.\n4. **Passion:** I am genuinely passionate about [domain] and eager to contribute from day one.'\n\n**Tip:** Research the company before the interview and mention specific things about their work that excite you!"]
+    },
+    {
+      "tag": "hr_where_do_you_see_yourself",
+      "patterns": ["Where do you see yourself in 5 years?", "Where do you see yourself in 3 years?", "What are your future goals?", "Career goals", "Future plans interview question"],
+      "responses": ["**How to answer 'Where do you see yourself in 5 years?':**\n\n**Formula:** Show ambition + alignment with the company\n\n'In 5 years, I see myself as a senior developer/engineer who has grown both technically and professionally within this organization. I want to take on leadership responsibilities, mentor junior team members, and contribute to impactful projects that drive business value.'\n\n**Avoid:** Saying you want to start your own company or leave for higher studies (suggests you won't stay)."]
+    },
+    {
+      "tag": "tech_oop",
+      "patterns": ["What is OOP?", "Explain Object Oriented Programming", "What are the four pillars of OOP?", "OOP concepts", "Object oriented programming principles", "Explain encapsulation", "What is polymorphism", "What is inheritance in programming"],
+      "responses": ["**Object-Oriented Programming (OOP):**\n\nOOP is a programming paradigm based on the concept of 'objects' that contain data (attributes) and code (methods).\n\n**The 4 Pillars:**\n1. **Encapsulation:** Bundling data and methods together, hiding internal state. Example: private variables with getter/setter methods.\n2. **Abstraction:** Hiding complex implementation, showing only necessary features. Example: Abstract classes and interfaces.\n3. **Inheritance:** Creating new classes from existing ones, promoting code reuse. Example: `class Dog extends Animal`\n4. **Polymorphism:** One interface, multiple implementations. Example: Method overloading (compile-time) and method overriding (runtime).\n\n**Common Follow-up:** 'What's the difference between abstraction and encapsulation?' — Abstraction hides complexity, Encapsulation hides data."]
+    },
+    {
+      "tag": "tech_dbms",
+      "patterns": ["What is a database?", "Explain DBMS", "What are the types of databases?", "What is SQL?", "Difference between SQL and NoSQL", "What are ACID properties", "Explain normalization", "What is a primary key", "What is indexing in database"],
+      "responses": ["**Database Management System (DBMS):**\n\nA DBMS is software for storing, retrieving, and managing data efficiently.\n\n**Key Concepts:**\n- **SQL vs NoSQL:** SQL databases (MySQL, PostgreSQL) use structured tables with schemas. NoSQL (MongoDB, Redis) are schema-less and handle unstructured data.\n- **ACID Properties:** Atomicity (all or nothing), Consistency (valid state), Isolation (concurrent transactions don't interfere), Durability (committed data persists).\n- **Normalization:** Organizing data to reduce redundancy. 1NF → 2NF → 3NF → BCNF.\n- **Keys:** Primary Key (unique identifier), Foreign Key (references another table), Candidate Key (potential primary keys).\n- **Indexing:** Speeds up data retrieval using B-trees or Hash indexes.\n\n**Interview Tip:** Be ready to write basic SQL queries (SELECT, JOIN, GROUP BY, HAVING)."]
+    },
+    {
+      "tag": "tech_os",
+      "patterns": ["What is an operating system?", "Explain OS concepts", "What is a process?", "Difference between process and thread", "What is deadlock", "Explain virtual memory", "What is paging", "CPU scheduling algorithms", "What is a semaphore"],
+      "responses": ["**Operating System Concepts:**\n\n**Key Topics for Interviews:**\n\n1. **Process vs Thread:** A process is an independent program in execution. A thread is the smallest unit of execution within a process. Threads share memory; processes don't.\n\n2. **Deadlock:** Occurs when processes wait indefinitely for resources. **4 Necessary Conditions:** Mutual Exclusion, Hold & Wait, No Preemption, Circular Wait. **Prevention:** Break any one condition.\n\n3. **CPU Scheduling:** FCFS, SJF (Shortest Job First), Round Robin, Priority Scheduling. Round Robin is most common in time-sharing systems.\n\n4. **Virtual Memory:** Gives illusion of large memory using disk. Uses **paging** (fixed-size blocks) or **segmentation** (variable-size blocks).\n\n5. **Synchronization:** Semaphores and Mutexes prevent race conditions in concurrent programming."]
+    },
+    {
+      "tag": "tech_dsa",
+      "patterns": ["What is a data structure?", "Explain data structures", "What is an algorithm?", "Types of data structures", "What is a linked list", "Explain binary tree", "What is sorting", "Array vs linked list", "What is time complexity", "Big O notation", "What is dynamic programming", "Explain recursion"],
+      "responses": ["**Data Structures & Algorithms (DSA):**\n\n**Most Asked in Interviews:**\n\n1. **Arrays vs Linked Lists:** Arrays have O(1) access but O(n) insertion. Linked Lists have O(n) access but O(1) insertion at head.\n\n2. **Trees:** Binary Tree, BST (Binary Search Tree), AVL Tree. Know traversals: Inorder, Preorder, Postorder, Level-order (BFS).\n\n3. **Sorting:** Quick Sort O(n log n) avg, Merge Sort O(n log n) guaranteed, Bubble Sort O(n²). Know when to use which.\n\n4. **Time Complexity (Big O):** O(1) < O(log n) < O(n) < O(n log n) < O(n²) < O(2ⁿ)\n\n5. **Dynamic Programming:** Break problems into overlapping subproblems. Classic examples: Fibonacci, Knapsack, LCS (Longest Common Subsequence).\n\n**Tip:** Practice at least 50-100 problems on LeetCode/HackerRank before interviews!"]
+    },
+    {
+      "tag": "tech_networking",
+      "patterns": ["What is networking?", "OSI model", "TCP vs UDP", "What is HTTP", "What is IP address", "Explain DNS", "What is a subnet", "Difference between TCP and UDP"],
+      "responses": ["**Computer Networking Concepts:**\n\n1. **OSI Model (7 Layers):** Physical → Data Link → Network → Transport → Session → Presentation → Application. Remember: 'Please Do Not Throw Sausage Pizza Away'\n\n2. **TCP vs UDP:** TCP is connection-oriented, reliable, ordered (used for web, email). UDP is connectionless, faster, no guarantee (used for streaming, gaming).\n\n3. **HTTP/HTTPS:** HTTP is the protocol for web communication. HTTPS adds SSL/TLS encryption for security.\n\n4. **DNS:** Translates domain names (google.com) to IP addresses (142.250.x.x).\n\n5. **IP Addressing:** IPv4 (32-bit, e.g. 192.168.1.1) vs IPv6 (128-bit). Subnetting divides networks into smaller segments."]
+    },
+    {
+      "tag": "tech_python",
+      "patterns": ["What is Python?", "Python interview questions", "Python basics", "What are decorators in Python", "List vs tuple", "What is a lambda function"],
+      "responses": ["**Python Interview Essentials:**\n\n1. **List vs Tuple:** Lists are mutable `[1,2,3]`, Tuples are immutable `(1,2,3)`. Tuples are faster and used as dictionary keys.\n\n2. **Decorators:** Functions that modify other functions. `@staticmethod`, `@classmethod`, custom decorators with `@wrapper`.\n\n3. **Lambda:** Anonymous single-expression functions. `lambda x: x*2`\n\n4. **List Comprehension:** `[x**2 for x in range(10)]` — concise way to create lists.\n\n5. **GIL (Global Interpreter Lock):** Prevents true multi-threading in CPython. Use multiprocessing for CPU-bound tasks.\n\n6. **`*args` and `**kwargs`:** `*args` for variable positional arguments, `**kwargs` for variable keyword arguments."]
+    },
+    {
+      "tag": "tech_java",
+      "patterns": ["What is Java?", "Java interview questions", "Java basics", "JVM JDK JRE difference", "What is multithreading in Java", "Java collections"],
+      "responses": ["**Java Interview Essentials:**\n\n1. **JDK vs JRE vs JVM:** JDK (development kit) ⊃ JRE (runtime environment) ⊃ JVM (virtual machine that executes bytecode).\n\n2. **Collections Framework:** ArrayList (dynamic array), LinkedList, HashMap (key-value), HashSet (unique elements), TreeMap (sorted).\n\n3. **Multithreading:** Use `Thread` class or `Runnable` interface. Synchronization prevents race conditions.\n\n4. **Abstract vs Interface:** Abstract classes can have constructors and non-abstract methods. Interfaces (Java 8+) can have default methods.\n\n5. **Exception Handling:** try-catch-finally, checked vs unchecked exceptions. Custom exceptions extend `Exception` class.\n\n6. **String Pool:** Strings are immutable. `StringBuilder` for mutable string operations."]
+    },
+    {
+      "tag": "placement_tips",
+      "patterns": ["How to prepare for placements?", "Placement preparation tips", "How to crack campus placements", "Placement strategy", "How to get placed", "Campus placement guide"],
+      "responses": ["**Placement Preparation Strategy:**\n\n**Phase 1 (3-6 months before):**\n- Master DSA fundamentals — solve 100+ problems on LeetCode/GFG\n- Revise core subjects: OS, DBMS, CN, OOP\n- Build 2-3 solid projects for your resume\n\n**Phase 2 (1-3 months before):**\n- Practice aptitude (Quant, Logical, Verbal) daily\n- Prepare HR questions using STAR method\n- Research target companies and their interview patterns\n\n**Phase 3 (Interview week):**\n- Revise your resume — know every line\n- Practice mock interviews with friends\n- Sleep well, stay calm, be confident\n\n**Golden Rules:**\n- Consistency beats intensity\n- Quality of practice > Quantity\n- Communication skills matter as much as technical skills"]
+    },
+    {
+      "tag": "resume_tips",
+      "patterns": ["How to make a good resume?", "Resume tips", "What should be in my resume?", "Resume format for fresher", "How to write resume for placement"],
+      "responses": ["**Resume Tips for Freshers:**\n\n**Structure (1 page only!):**\n1. **Header:** Name, Phone, Email, LinkedIn, GitHub\n2. **Education:** College, Branch, CGPA/Percentage\n3. **Skills:** Programming languages, frameworks, tools\n4. **Projects:** 2-3 projects with tech stack and impact metrics\n5. **Experience:** Internships, freelance work (if any)\n6. **Achievements:** Hackathons, certifications, competitive programming ranks\n\n**Do's:**\n- Use action verbs: Built, Developed, Implemented, Optimized\n- Quantify results: 'Reduced load time by 40%'\n- Tailor resume for each company\n\n**Don'ts:**\n- No photos, no hobbies like 'listening to music'\n- No spelling mistakes\n- Don't list skills you can't explain in an interview"]
+    },
+    {
+      "tag": "aptitude_help",
+      "patterns": ["How to improve aptitude?", "Aptitude preparation", "Quantitative aptitude tips", "Logical reasoning tips", "Verbal ability tips"],
+      "responses": ["**Aptitude Preparation Guide:**\n\n**Quantitative Aptitude:** Focus on: Percentages, Profit & Loss, Time & Work, Time Speed Distance, Probability, Permutations.\n- Practice 10 problems daily\n- Learn shortcut methods and Vedic math tricks\n\n**Logical Reasoning:** Focus on: Blood Relations, Coding-Decoding, Seating Arrangement, Syllogisms, Data Interpretation.\n- Practice puzzles and brain teasers\n\n**Verbal Ability:** Focus on: Reading Comprehension, Synonyms/Antonyms, Sentence Correction, Para Jumbles.\n- Read newspapers daily for vocabulary\n\n**Pro Tip:** You can practice all of these right here in the **Aptitude Practice** section of this app! Head over there to start a quiz."]
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "Database Management Systems (DBMS)": {
+    "Normal Forms": "1NF ensures atomicity. 2NF removes partial dependency. 3NF removes transitive dependency. BCNF ensures every determinant is a candidate key.",
+    "Transactions and ACID": "A transaction is a logical unit of work. ACID properties stand for Atomicity, Consistency, Isolation, and Durability, ensuring reliable database transactions.",
+    "Indexing": "Indexing improves the speed of data retrieval operations. B-trees and Hash indexes are common implementations."
+  },
+  "Operating Systems (OS)": {
+    "Deadlocks": "A deadlock occurs when processes wait indefinitely for resources held by each other. Four necessary conditions: Mutual exclusion, Hold and wait, No preemption, and Circular wait.",
+    "Process Scheduling": "Determines which process runs at a given time. Algorithms include FCFS, SJF, Priority Scheduling, and Round Robin.",
+    "Virtual Memory": "A memory management capability that provides an 'idealized abstraction of the storage resources that are actually available on a given machine' which 'creates the illusion to users of a very large (main) memory'."
+  },
+  "Data Structures & Algorithms (DSA)": {
+    "Trees & Graphs": "Trees are hierarchical data structures. A Graph is a non-linear data structure consisting of nodes and edges. Common traversals include BFS and DFS.",
+    "Sorting Algorithms": "Algorithms that put elements of a list in a certain order. Examples: Quick Sort (O(n log n)), Merge Sort (O(n log n)), Bubble Sort (O(n^2)).",
+    "Dynamic Programming": "An algorithmic technique for solving an optimization problem by breaking it down into simpler subproblems and utilizing the fact that the optimal solution to the overall problem depends upon the optimal solution to its subproblems."
+  }
+}

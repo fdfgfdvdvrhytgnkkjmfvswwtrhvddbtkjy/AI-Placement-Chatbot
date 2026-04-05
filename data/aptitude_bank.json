@@ -1,0 +1,44 @@
+{
+  "Quantitative Aptitude": [
+    {
+      "question": "A train running at the speed of 60 km/hr crosses a pole in 9 seconds. What is the length of the train?",
+      "options": ["120 metres", "180 metres", "324 metres", "150 metres"],
+      "answer": "150 metres",
+      "explanation": "Speed = (60 * 5/18) m/sec = 50/3 m/sec. Length of train = Speed * Time = (50/3 * 9) = 150 metres."
+    },
+    {
+      "question": "The sum of ages of 5 children born at the intervals of 3 years each is 50 years. What is the age of the youngest child?",
+      "options": ["4 years", "8 years", "10 years", "None of these"],
+      "answer": "4 years",
+      "explanation": "Let ages be x, x+3, x+6, x+9, x+12. Sum = 5x + 30 = 50. x = 4."
+    }
+  ],
+  "Logical Reasoning": [
+    {
+      "question": "Arrange the words given below in a meaningful sequence: 1. Key 2. Door 3. Lock 4. Room 5. Switch on",
+      "options": ["5, 1, 2, 4, 3", "4, 2, 1, 5, 3", "1, 3, 2, 4, 5", "1, 2, 3, 5, 4"],
+      "answer": "1, 3, 2, 4, 5",
+      "explanation": "The correct order is: Key -> Lock -> Door -> Room -> Switch on."
+    },
+    {
+      "question": "Look at this series: 2, 1, (1/2), (1/4), ... What number should come next?",
+      "options": ["(1/3)", "(1/8)", "(2/8)", "(1/16)"],
+      "answer": "(1/8)",
+      "explanation": "This is a simple division series; each number is one-half of the previous number."
+    }
+  ],
+  "Verbal Ability": [
+    {
+      "question": "Choose the word which is the exact OPPOSITE of the given word: ENORMOUS",
+      "options": ["Soft", "Average", "Tiny", "Weak"],
+      "answer": "Tiny",
+      "explanation": "Enormous means very large in size, quantity, or extent. Tiny means very small."
+    },
+    {
+      "question": "Find the correctly spelt word.",
+      "options": ["Accomodation", "Accommodation", "Acommodation", "Acomodation"],
+      "answer": "Accommodation",
+      "explanation": "The correct spelling is 'Accommodation' (double c, double m)."
+    }
+  ]
+}
