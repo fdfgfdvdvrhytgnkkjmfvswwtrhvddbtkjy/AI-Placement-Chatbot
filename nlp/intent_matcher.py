@@ -21,111 +21,95 @@ try:
 except Exception:
     SKLEARN_AVAILABLE = False
 
-# Google Gemini AI (new SDK)
-try:
-    from google import genai
-    GEMINI_AVAILABLE = True
-except Exception:
-    GEMINI_AVAILABLE = False
+# Gemini AI via direct REST API (no SDK needed)
+import urllib.request
+import urllib.error
+
+GEMINI_AVAILABLE = True  # Always available since we use REST API
 
 # ============================================================
-# Gemini AI Integration
+# Gemini AI Integration (REST API)
 # ============================================================
-_gemini_client = None
+_gemini_api_key = None
 _gemini_configured = False
 _gemini_error = ""
 _gemini_model_name = ""
+_gemini_base_url = ""
+
+def _gemini_request(base_url, model, api_key, prompt_text):
+    """Make a direct REST API call to Gemini."""
+    url = f"{base_url}/models/{model}:generateContent?key={api_key}"
+    payload = json.dumps({
+        "contents": [{"parts": [{"text": prompt_text}]}]
+    })
+    
+    req = urllib.request.Request(
+        url,
+        data=payload.encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST"
+    )
+    
+    response = urllib.request.urlopen(req, timeout=30)
+    result = json.loads(response.read().decode("utf-8"))
+    
+    # Extract text from response
+    candidates = result.get("candidates", [])
+    if candidates:
+        parts = candidates[0].get("content", {}).get("parts", [])
+        if parts:
+            return parts[0].get("text", "")
+    return None
 
 def configure_gemini(api_key):
-    """Configure the Gemini AI model with user's API key."""
-    global _gemini_client, _gemini_configured, _gemini_error, _gemini_model_name
-    if not GEMINI_AVAILABLE or not api_key:
+    """Configure Gemini AI with user's API key using REST API."""
+    global _gemini_api_key, _gemini_configured, _gemini_error, _gemini_model_name, _gemini_base_url
+    
+    if not api_key:
         _gemini_configured = False
-        _gemini_error = "Gemini library not available" if not GEMINI_AVAILABLE else "No API key provided"
+        _gemini_error = "No API key provided"
         return False, _gemini_error
     
-    try:
-        client = genai.Client(api_key=api_key, http_options={"api_version": "v1"})
-        
-        # First, discover which models are available
-        available_models = []
+    # Try different API versions and models
+    configs = [
+        ("https://generativelanguage.googleapis.com/v1beta", "gemini-2.0-flash"),
+        ("https://generativelanguage.googleapis.com/v1beta", "gemini-1.5-flash"),
+        ("https://generativelanguage.googleapis.com/v1beta", "gemini-1.5-pro"),
+        ("https://generativelanguage.googleapis.com/v1beta", "gemini-pro"),
+        ("https://generativelanguage.googleapis.com/v1", "gemini-2.0-flash"),
+        ("https://generativelanguage.googleapis.com/v1", "gemini-1.5-flash"),
+        ("https://generativelanguage.googleapis.com/v1", "gemini-pro"),
+    ]
+    
+    last_error = ""
+    
+    for base_url, model in configs:
         try:
-            for model in client.models.list():
-                model_id = model.name if hasattr(model, 'name') else str(model)
-                # Only keep generative models
-                if 'gemini' in model_id.lower():
-                    available_models.append(model_id)
-        except Exception:
-            pass
-        
-        # Preferred models in order + any discovered ones
-        preferred = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"]
-        
-        # Build a combined list: preferred first, then any discovered models
-        models_to_try = []
-        for m in preferred:
-            models_to_try.append(m)
-            # Also try with "models/" prefix
-            models_to_try.append(f"models/{m}")
-        for m in available_models:
-            if m not in models_to_try:
-                models_to_try.append(m)
-        
-        last_error = ""
-        
-        for model_name in models_to_try:
-            try:
-                response = client.models.generate_content(
-                    model=model_name,
-                    contents="Say hi"
-                )
-                if response and response.text:
-                    _gemini_client = client
-                    _gemini_model_name = model_name
-                    _gemini_configured = True
-                    _gemini_error = ""
-                    display_name = model_name.replace("models/", "")
-                    return True, f"Connected using {display_name}"
-            except Exception as model_err:
-                last_error = str(model_err)
-                continue
-        
-        # If we get here, also try with v1beta
-        try:
-            client_beta = genai.Client(api_key=api_key, http_options={"api_version": "v1beta"})
-            for model_name in preferred:
-                try:
-                    response = client_beta.models.generate_content(
-                        model=model_name,
-                        contents="Say hi"
-                    )
-                    if response and response.text:
-                        _gemini_client = client_beta
-                        _gemini_model_name = model_name
-                        _gemini_configured = True
-                        _gemini_error = ""
-                        return True, f"Connected using {model_name}"
-                except Exception as e2:
-                    last_error = str(e2)
-                    continue
-        except Exception:
-            pass
-        
-        _gemini_configured = False
-        avail_str = ", ".join(available_models[:5]) if available_models else "none found"
-        _gemini_error = f"Available models: {avail_str}. Last error: {last_error[:200]}"
-        return False, _gemini_error
-        
-    except Exception as e:
-        _gemini_configured = False
-        _gemini_error = str(e)[:300]
-        return False, _gemini_error
+            result = _gemini_request(base_url, model, api_key, "Say hi")
+            if result:
+                _gemini_api_key = api_key
+                _gemini_model_name = model
+                _gemini_base_url = base_url
+                _gemini_configured = True
+                _gemini_error = ""
+                return True, f"Connected using {model}"
+        except urllib.error.HTTPError as e:
+            error_body = e.read().decode("utf-8", errors="ignore")[:200]
+            last_error = f"{e.code}: {error_body}"
+            continue
+        except Exception as e:
+            last_error = str(e)[:200]
+            continue
+    
+    _gemini_configured = False
+    _gemini_error = f"All models failed. Last error: {last_error}"
+    return False, _gemini_error
 
 def get_gemini_error():
     return _gemini_error
 
 def is_gemini_active():
-    return _gemini_configured and _gemini_client is not None
+    return _gemini_configured and _gemini_api_key is not None
 
 def _ask_gemini(user_input, context=""):
     """Send a query to Gemini AI with placement assistant context."""
@@ -144,19 +128,14 @@ def _ask_gemini(user_input, context=""):
         if context:
             prompt = (
                 f"{system_prompt}\n\n"
-                f"The student has uploaded study documents. Here is relevant context from their documents:\n"
+                f"The student has uploaded study documents. Here is relevant context:\n"
                 f"---\n{context}\n---\n\n"
-                f"Based on the above context AND your own knowledge, answer the following question:\n"
-                f"{user_input}"
+                f"Answer the following question:\n{user_input}"
             )
         else:
             prompt = f"{system_prompt}\n\nStudent's question: {user_input}"
         
-        response = _gemini_client.models.generate_content(
-            model=_gemini_model_name,
-            contents=prompt
-        )
-        return response.text
+        return _gemini_request(_gemini_base_url, _gemini_model_name, _gemini_api_key, prompt)
     except Exception as e:
         return f"Gemini API error: {str(e)}"
 
@@ -166,11 +145,7 @@ def _ask_gemini_raw(prompt):
         return None
     
     try:
-        response = _gemini_client.models.generate_content(
-            model=_gemini_model_name,
-            contents=prompt
-        )
-        return response.text
+        return _gemini_request(_gemini_base_url, _gemini_model_name, _gemini_api_key, prompt)
     except Exception as e:
         return None
 
