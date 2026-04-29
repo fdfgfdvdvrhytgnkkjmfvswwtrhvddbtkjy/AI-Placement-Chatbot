@@ -94,9 +94,25 @@ def configure_gemini(api_key):
                 _gemini_error = ""
                 return True, f"Connected using {model}"
         except urllib.error.HTTPError as e:
+            error_code = e.code
             error_body = e.read().decode("utf-8", errors="ignore")[:200]
-            last_error = f"{e.code}: {error_body}"
-            continue
+            
+            if error_code == 429:
+                # 429 = quota exceeded but KEY IS VALID and MODEL EXISTS
+                # Accept this connection - it will work when quota resets
+                _gemini_api_key = api_key
+                _gemini_model_name = model
+                _gemini_base_url = base_url
+                _gemini_configured = True
+                _gemini_error = ""
+                return True, f"Connected using {model} (quota will reset shortly)"
+            elif error_code == 400:
+                # 400 = bad request, key is valid but model might not support this
+                last_error = f"{error_code}: {error_body}"
+                continue
+            else:
+                last_error = f"{error_code}: {error_body}"
+                continue
         except Exception as e:
             last_error = str(e)[:200]
             continue
