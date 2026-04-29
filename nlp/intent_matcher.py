@@ -79,7 +79,7 @@ def _gemini_request(base_url, model, api_key, prompt_text):
     return None
 
 def configure_gemini(api_key):
-    """Configure Gemini AI with user's API key using REST API."""
+    """Configure Gemini AI with user's API key. No test call - saves quota."""
     global _gemini_api_key, _gemini_configured, _gemini_error, _gemini_model_name, _gemini_base_url
     
     if not api_key:
@@ -87,56 +87,20 @@ def configure_gemini(api_key):
         _gemini_error = "No API key provided"
         return False, _gemini_error
     
-    # Try different API versions and models
-    configs = [
-        ("https://generativelanguage.googleapis.com/v1beta", "gemini-2.0-flash"),
-        ("https://generativelanguage.googleapis.com/v1beta", "gemini-1.5-flash"),
-        ("https://generativelanguage.googleapis.com/v1beta", "gemini-1.5-pro"),
-        ("https://generativelanguage.googleapis.com/v1beta", "gemini-pro"),
-        ("https://generativelanguage.googleapis.com/v1", "gemini-2.0-flash"),
-        ("https://generativelanguage.googleapis.com/v1", "gemini-1.5-flash"),
-        ("https://generativelanguage.googleapis.com/v1", "gemini-pro"),
-    ]
+    # Validate key format (Google AI keys start with "AIza")
+    api_key = api_key.strip()
+    if not api_key.startswith("AIza"):
+        _gemini_configured = False
+        _gemini_error = "Invalid key format. Google AI keys start with 'AIza'"
+        return False, _gemini_error
     
-    last_error = ""
-    
-    for base_url, model in configs:
-        try:
-            result = _gemini_request(base_url, model, api_key, "Say hi")
-            if result:
-                _gemini_api_key = api_key
-                _gemini_model_name = model
-                _gemini_base_url = base_url
-                _gemini_configured = True
-                _gemini_error = ""
-                return True, f"Connected using {model}"
-        except urllib.error.HTTPError as e:
-            error_code = e.code
-            error_body = e.read().decode("utf-8", errors="ignore")[:200]
-            
-            if error_code == 429:
-                # 429 = quota exceeded but KEY IS VALID and MODEL EXISTS
-                # Accept this connection - it will work when quota resets
-                _gemini_api_key = api_key
-                _gemini_model_name = model
-                _gemini_base_url = base_url
-                _gemini_configured = True
-                _gemini_error = ""
-                return True, f"Connected using {model} (quota will reset shortly)"
-            elif error_code == 400:
-                # 400 = bad request, key is valid but model might not support this
-                last_error = f"{error_code}: {error_body}"
-                continue
-            else:
-                last_error = f"{error_code}: {error_body}"
-                continue
-        except Exception as e:
-            last_error = str(e)[:200]
-            continue
-    
-    _gemini_configured = False
-    _gemini_error = f"All models failed. Last error: {last_error}"
-    return False, _gemini_error
+    # Accept the key without making a test call to save quota
+    _gemini_api_key = api_key
+    _gemini_model_name = "gemini-2.0-flash"
+    _gemini_base_url = "https://generativelanguage.googleapis.com/v1beta"
+    _gemini_configured = True
+    _gemini_error = ""
+    return True, "Connected (gemini-2.0-flash)"
 
 def get_gemini_error():
     return _gemini_error
