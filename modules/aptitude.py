@@ -8,17 +8,11 @@ def generate_ai_questions(topic, num_questions=5):
         return None
     
     prompt = (
-        f"Generate exactly {num_questions} multiple-choice aptitude questions on the topic: '{topic}'.\n\n"
-        f"Return ONLY valid JSON in this exact format, no extra text:\n"
-        f'{{"questions": [\n'
-        f'  {{"question": "question text", "options": ["A) option1", "B) option2", "C) option3", "D) option4"], "answer": "A) option1", "explanation": "brief explanation"}}\n'
-        f']}}\n\n'
-        f"Rules:\n"
-        f"- Make questions progressively harder (easy to hard)\n"
-        f"- Include numerical/calculation questions where appropriate\n"
-        f"- Explanations should show step-by-step solutions\n"
-        f"- Options must start with A), B), C), D)\n"
-        f"- The answer must exactly match one of the options"
+        f"Generate exactly {num_questions} multiple-choice questions on: '{topic}'.\n\n"
+        f"IMPORTANT: Return ONLY a JSON object. No markdown, no explanation, no extra text.\n"
+        f"Keep explanations under 50 words each.\n\n"
+        f"Exact format:\n"
+        f'{{"questions": [{{"question": "text", "options": ["A) opt1", "B) opt2", "C) opt3", "D) opt4"], "answer": "A) opt1", "explanation": "short explanation"}}]}}\n'
     )
     
     try:
@@ -26,15 +20,46 @@ def generate_ai_questions(topic, num_questions=5):
         if not response:
             return None
         
+        # Clean up response
         response = response.replace("```json", "").replace("```", "").strip()
+        
+        # Remove any text before first { and after last }
         start = response.find("{")
         end = response.rfind("}") + 1
-        if start >= 0 and end > start:
-            json_str = response[start:end]
+        if start < 0 or end <= start:
+            return None
+        
+        json_str = response[start:end]
+        
+        # Fix common JSON issues from AI
+        import re
+        # Remove trailing commas before ] or }
+        json_str = re.sub(r',\s*([}\]])', r'\1', json_str)
+        # Fix unescaped newlines inside strings
+        json_str = json_str.replace('\n', ' ')
+        
+        try:
             data = json.loads(json_str)
             return data.get("questions", [])
+        except json.JSONDecodeError:
+            # Try to extract individual question objects
+            pattern = r'\{[^{}]*"question"[^{}]*\}'
+            matches = re.findall(pattern, json_str)
+            if matches:
+                questions = []
+                for m in matches:
+                    try:
+                        q = json.loads(m)
+                        if "question" in q and "options" in q and "answer" in q:
+                            if "explanation" not in q:
+                                q["explanation"] = "No explanation available."
+                            questions.append(q)
+                    except Exception:
+                        continue
+                if questions:
+                    return questions
     except Exception as e:
-        st.error(f"Error parsing AI response: {str(e)}")
+        st.error(f"AI error: {str(e)}")
     
     return None
 
