@@ -5,52 +5,57 @@ import nlp.intent_matcher as intent_matcher
 def generate_ai_questions(topic, num_questions=5):
     """Use Gemini AI to generate aptitude questions on a given topic."""
     if not intent_matcher.is_gemini_active():
+        st.error("Gemini AI is not active. Check your API key.")
         return None
     
     prompt = (
-        f"Generate exactly {num_questions} multiple-choice questions on: '{topic}'.\n\n"
-        f"IMPORTANT: Return ONLY a JSON object. No markdown, no explanation, no extra text.\n"
-        f"Keep explanations under 50 words each.\n\n"
-        f"Exact format:\n"
-        f'{{"questions": [{{"question": "text", "options": ["A) opt1", "B) opt2", "C) opt3", "D) opt4"], "answer": "A) opt1", "explanation": "short explanation"}}]}}\n'
+        f"Generate {num_questions} MCQ questions on '{topic}'. "
+        f"Reply with ONLY JSON, no other text. Format: "
+        f'{{"questions":[{{"question":"text","options":["A) a","B) b","C) c","D) d"],"answer":"A) a","explanation":"why"}}]}}'
     )
     
     try:
         response = intent_matcher._ask_gemini_raw(prompt)
         if not response:
+            st.error("Gemini returned empty response. Try again.")
             return None
         
         # Clean up response
+        import re
         response = response.replace("```json", "").replace("```", "").strip()
         
         # Remove any text before first { and after last }
         start = response.find("{")
         end = response.rfind("}") + 1
         if start < 0 or end <= start:
+            st.error(f"No JSON found in response. Raw: {response[:200]}")
             return None
         
         json_str = response[start:end]
         
-        # Fix common JSON issues from AI
-        import re
-        # Remove trailing commas before ] or }
+        # Fix common JSON issues
         json_str = re.sub(r',\s*([}\]])', r'\1', json_str)
-        # Fix unescaped newlines inside strings
-        json_str = json_str.replace('\n', ' ')
         
         try:
             data = json.loads(json_str)
-            return data.get("questions", [])
-        except json.JSONDecodeError:
-            # Try to extract individual question objects
-            pattern = r'\{[^{}]*"question"[^{}]*\}'
-            matches = re.findall(pattern, json_str)
+            questions = data.get("questions", [])
+            if questions:
+                return questions
+            else:
+                st.error("JSON parsed but no questions found.")
+                return None
+        except json.JSONDecodeError as je:
+            # Fallback: extract individual question objects
+            pattern = r'\{[^{}]*"question"\s*:\s*"[^"]*"[^{}]*\}'
+            matches = re.findall(pattern, json_str, re.DOTALL)
             if matches:
                 questions = []
                 for m in matches:
                     try:
                         q = json.loads(m)
-                        if "question" in q and "options" in q and "answer" in q:
+                        if "question" in q and "options" in q:
+                            if "answer" not in q:
+                                q["answer"] = q["options"][0]
                             if "explanation" not in q:
                                 q["explanation"] = "No explanation available."
                             questions.append(q)
@@ -58,6 +63,9 @@ def generate_ai_questions(topic, num_questions=5):
                         continue
                 if questions:
                     return questions
+            st.error(f"JSON parse error: {str(je)[:150]}")
+            st.code(json_str[:300], language="json")
+            return None
     except Exception as e:
         st.error(f"AI error: {str(e)}")
     
