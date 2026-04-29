@@ -103,14 +103,27 @@ def main():
     # Auto-connect Gemini from .env or Streamlit Cloud secrets
     if not intent_matcher.is_gemini_active():
         env_key = ""
+        key_source = ""
+        
+        # Try Streamlit Cloud secrets first
         try:
-            env_key = st.secrets.get("GEMINI_API_KEY", "")
+            env_key = st.secrets["GEMINI_API_KEY"]
+            key_source = "Streamlit Secrets"
         except Exception:
             pass
+        
+        # Fallback to .env file
         if not env_key:
             env_key = os.environ.get("GEMINI_API_KEY", "")
+            if env_key:
+                key_source = ".env file"
+        
         if env_key and env_key != "PASTE_YOUR_KEY_HERE":
-            intent_matcher.configure_gemini(env_key)
+            success, message = intent_matcher.configure_gemini(env_key)
+            if not success:
+                st.session_state["gemini_error"] = f"Source: {key_source}. {message}"
+        else:
+            st.session_state["gemini_error"] = "No API key found in secrets or .env file"
 
     # ---- Sidebar ----
     st.sidebar.markdown("""
@@ -138,6 +151,8 @@ def main():
         st.sidebar.markdown("🟢 **AI: Gemini Active**")
     else:
         st.sidebar.markdown("🔴 **AI: Offline**")
+        if "gemini_error" in st.session_state:
+            st.sidebar.caption(f"⚠️ {st.session_state['gemini_error']}")
     
     st.sidebar.caption("Built for B.Tech Students 🎓")
     
