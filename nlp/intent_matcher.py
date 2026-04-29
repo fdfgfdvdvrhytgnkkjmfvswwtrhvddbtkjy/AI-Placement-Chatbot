@@ -37,28 +37,45 @@ _gemini_model_name = ""
 _gemini_base_url = ""
 
 def _gemini_request(base_url, model, api_key, prompt_text):
-    """Make a direct REST API call to Gemini."""
+    """Make a direct REST API call to Gemini with auto-retry for rate limits."""
+    import time
+    
     url = f"{base_url}/models/{model}:generateContent?key={api_key}"
     payload = json.dumps({
         "contents": [{"parts": [{"text": prompt_text}]}]
     })
     
-    req = urllib.request.Request(
-        url,
-        data=payload.encode("utf-8"),
-        headers={"Content-Type": "application/json"},
-        method="POST"
-    )
+    max_retries = 3
     
-    response = urllib.request.urlopen(req, timeout=30)
-    result = json.loads(response.read().decode("utf-8"))
+    for attempt in range(max_retries):
+        try:
+            req = urllib.request.Request(
+                url,
+                data=payload.encode("utf-8"),
+                headers={"Content-Type": "application/json"},
+                method="POST"
+            )
+            
+            response = urllib.request.urlopen(req, timeout=30)
+            result = json.loads(response.read().decode("utf-8"))
+            
+            # Extract text from response
+            candidates = result.get("candidates", [])
+            if candidates:
+                parts = candidates[0].get("content", {}).get("parts", [])
+                if parts:
+                    return parts[0].get("text", "")
+            return None
+            
+        except urllib.error.HTTPError as e:
+            if e.code == 429 and attempt < max_retries - 1:
+                # Rate limited - wait and retry
+                wait_time = (attempt + 1) * 3  # 3s, 6s, 9s
+                time.sleep(wait_time)
+                continue
+            else:
+                raise  # Re-raise for other errors or final attempt
     
-    # Extract text from response
-    candidates = result.get("candidates", [])
-    if candidates:
-        parts = candidates[0].get("content", {}).get("parts", [])
-        if parts:
-            return parts[0].get("text", "")
     return None
 
 def configure_gemini(api_key):
@@ -152,6 +169,10 @@ def _ask_gemini(user_input, context=""):
             prompt = f"{system_prompt}\n\nStudent's question: {user_input}"
         
         return _gemini_request(_gemini_base_url, _gemini_model_name, _gemini_api_key, prompt)
+    except urllib.error.HTTPError as e:
+        if e.code == 429:
+            return "⏳ Rate limit reached. Please wait a minute and try again. The free Gemini tier allows 15 requests per minute."
+        return f"Gemini API error: {e.code}"
     except Exception as e:
         return f"Gemini API error: {str(e)}"
 
