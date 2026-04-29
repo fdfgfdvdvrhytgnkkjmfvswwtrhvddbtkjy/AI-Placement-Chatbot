@@ -128,13 +128,13 @@ def is_gemini_active():
     return _gemini_configured and _gemini_client is not None
 
 def _ask_gemini(user_input, context=""):
-    """Send a query to Gemini AI with optional document context."""
+    """Send a query to Gemini AI with placement assistant context."""
     if not is_gemini_active():
         return None
     
     try:
         system_prompt = (
-            "You are an AI Placement Preparation Assistant for B.Tech final year students. "
+            "You are CrackPlacement AI, a placement preparation assistant for B.Tech students. "
             "You help with HR interview questions, technical concepts (OOP, DBMS, OS, DSA, Python, Java), "
             "aptitude preparation, resume tips, and placement strategies. "
             "Give detailed, well-structured answers with examples. Use markdown formatting with bold headers and bullet points. "
@@ -159,6 +159,20 @@ def _ask_gemini(user_input, context=""):
         return response.text
     except Exception as e:
         return f"Gemini API error: {str(e)}"
+
+def _ask_gemini_raw(prompt):
+    """Send a raw prompt to Gemini without any system prompt. Use for JSON/structured output."""
+    if not is_gemini_active():
+        return None
+    
+    try:
+        response = _gemini_client.models.generate_content(
+            model=_gemini_model_name,
+            contents=prompt
+        )
+        return response.text
+    except Exception as e:
+        return None
 
 
 # ============================================================

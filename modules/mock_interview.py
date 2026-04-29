@@ -20,7 +20,7 @@ def ai_generate_questions(interview_type, role="Software Engineer"):
     )
     
     try:
-        response = intent_matcher._ask_gemini(prompt)
+        response = intent_matcher._ask_gemini_raw(prompt)
         if not response:
             return None
         response = response.replace("```json", "").replace("```", "").strip()
