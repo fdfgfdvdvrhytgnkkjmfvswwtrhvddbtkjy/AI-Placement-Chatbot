@@ -1,29 +1,27 @@
 import urllib.request, urllib.error, json
 
-key = "AIzaSyCp2u0up5MTpKMKqKbYSHL7m_onuGNhquM"
+key = "AIzaSyAeBOYPHoWQYXA1L6vPfwhJFABKSZgnJHI"
 
-configs = [
-    ("https://generativelanguage.googleapis.com/v1beta", "gemini-2.0-flash"),
-    ("https://generativelanguage.googleapis.com/v1beta", "gemini-1.5-flash"),
-    ("https://generativelanguage.googleapis.com/v1beta", "gemini-pro"),
-    ("https://generativelanguage.googleapis.com/v1", "gemini-2.0-flash"),
-    ("https://generativelanguage.googleapis.com/v1", "gemini-1.5-flash"),
-    ("https://generativelanguage.googleapis.com/v1", "gemini-pro"),
+# Try newer models that might have separate quotas
+models_to_try = [
+    "gemini-2.5-flash-lite",
+    "gemini-2.5-flash",
+    "gemma-3-4b-it",
+    "gemma-3-12b-it",
 ]
 
-for base_url, model in configs:
-    url = f"{base_url}/models/{model}:generateContent?key={key}"
-    payload = json.dumps({"contents": [{"parts": [{"text": "Say hi"}]}]})
+for model in models_to_try:
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}"
+    payload = json.dumps({"contents": [{"parts": [{"text": "Say hello in one word"}]}]})
     
     try:
         req = urllib.request.Request(url, data=payload.encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
         resp = urllib.request.urlopen(req, timeout=15)
         result = json.loads(resp.read().decode("utf-8"))
         text = result.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
-        print(f"SUCCESS: {base_url} + {model} => {text[:50]}")
-        break
+        print(f"SUCCESS {model}: '{text.strip()[:80]}'")
     except urllib.error.HTTPError as e:
         body = e.read().decode("utf-8", errors="ignore")[:150]
-        print(f"FAIL: {model} @ {base_url.split('/')[-1]} => {e.code}: {body}")
+        print(f"FAIL {e.code} {model}: {body}")
     except Exception as e:
-        print(f"FAIL: {model} @ {base_url.split('/')[-1]} => {str(e)[:100]}")
+        print(f"FAIL {model}: {str(e)[:100]}")

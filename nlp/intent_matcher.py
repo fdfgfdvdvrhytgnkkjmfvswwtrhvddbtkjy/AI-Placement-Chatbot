@@ -24,8 +24,9 @@ except Exception:
 # Gemini AI via direct REST API (no SDK needed)
 import urllib.request
 import urllib.error
+import time
 
-GEMINI_AVAILABLE = True  # Always available since we use REST API
+GEMINI_AVAILABLE = True
 
 # ============================================================
 # Gemini AI Integration (REST API)
@@ -34,73 +35,104 @@ _gemini_api_key = None
 _gemini_configured = False
 _gemini_error = ""
 _gemini_model_name = ""
-_gemini_base_url = ""
+_gemini_base_url = "https://generativelanguage.googleapis.com/v1beta"
 
-def _gemini_request(base_url, model, api_key, prompt_text):
-    """Make a direct REST API call to Gemini with auto-retry for rate limits."""
-    import time
+# Models to try in order (newest/fastest first)
+_MODEL_FALLBACKS = [
+    "gemini-2.5-flash-lite",
+    "gemini-2.5-flash",
+    "gemini-2.0-flash",
+    "gemini-2.0-flash-lite",
+]
+
+def _gemini_request(prompt_text, retries=3):
+    """Make a REST API call to Gemini with auto-retry and model fallback."""
+    global _gemini_model_name
     
-    url = f"{base_url}/models/{model}:generateContent?key={api_key}"
-    payload = json.dumps({
-        "contents": [{"parts": [{"text": prompt_text}]}]
-    })
+    if not _gemini_api_key:
+        return None
     
-    max_retries = 3
+    # Build model list: current model first, then fallbacks
+    models = [_gemini_model_name] + [m for m in _MODEL_FALLBACKS if m != _gemini_model_name]
     
-    for attempt in range(max_retries):
-        try:
-            req = urllib.request.Request(
-                url,
-                data=payload.encode("utf-8"),
-                headers={"Content-Type": "application/json"},
-                method="POST"
-            )
-            
-            response = urllib.request.urlopen(req, timeout=30)
-            result = json.loads(response.read().decode("utf-8"))
-            
-            # Extract text from response
-            candidates = result.get("candidates", [])
-            if candidates:
-                parts = candidates[0].get("content", {}).get("parts", [])
-                if parts:
-                    return parts[0].get("text", "")
-            return None
-            
-        except urllib.error.HTTPError as e:
-            if e.code == 429 and attempt < max_retries - 1:
-                # Rate limited - wait and retry
-                wait_time = (attempt + 1) * 3  # 3s, 6s, 9s
-                time.sleep(wait_time)
-                continue
-            else:
-                raise  # Re-raise for other errors or final attempt
+    for model in models:
+        for attempt in range(retries):
+            try:
+                url = f"{_gemini_base_url}/models/{model}:generateContent?key={_gemini_api_key}"
+                payload = json.dumps({
+                    "contents": [{"parts": [{"text": prompt_text}]}]
+                })
+                
+                req = urllib.request.Request(
+                    url,
+                    data=payload.encode("utf-8"),
+                    headers={"Content-Type": "application/json"},
+                    method="POST"
+                )
+                
+                response = urllib.request.urlopen(req, timeout=60)
+                result = json.loads(response.read().decode("utf-8"))
+                
+                candidates = result.get("candidates", [])
+                if candidates:
+                    parts = candidates[0].get("content", {}).get("parts", [])
+                    if parts:
+                        text = parts[0].get("text", "")
+                        if text:
+                            # Remember which model worked
+                            _gemini_model_name = model
+                            return text
+                return None
+                
+            except urllib.error.HTTPError as e:
+                if e.code == 429:
+                    # Rate limited - wait and retry
+                    if attempt < retries - 1:
+                        time.sleep((attempt + 1) * 5)
+                        continue
+                    else:
+                        # Try next model
+                        break
+                elif e.code == 404:
+                    # Model not found - try next model
+                    break
+                else:
+                    try:
+                        e.read()
+                    except Exception:
+                        pass
+                    if attempt < retries - 1:
+                        time.sleep(2)
+                        continue
+                    break
+            except Exception:
+                if attempt < retries - 1:
+                    time.sleep(2)
+                    continue
+                break
     
     return None
 
 def configure_gemini(api_key):
-    """Configure Gemini AI with user's API key. No test call - saves quota."""
-    global _gemini_api_key, _gemini_configured, _gemini_error, _gemini_model_name, _gemini_base_url
+    """Configure Gemini AI with user's API key."""
+    global _gemini_api_key, _gemini_configured, _gemini_error, _gemini_model_name
     
     if not api_key:
         _gemini_configured = False
         _gemini_error = "No API key provided"
         return False, _gemini_error
     
-    # Validate key format (Google AI keys start with "AIza")
-    api_key = api_key.strip()
+    api_key = api_key.strip().strip('"').strip("'")
     if not api_key.startswith("AIza"):
         _gemini_configured = False
-        _gemini_error = "Invalid key format. Google AI keys start with 'AIza'"
+        _gemini_error = "Invalid key format"
         return False, _gemini_error
     
-    # Accept the key without making a test call to save quota
     _gemini_api_key = api_key
-    _gemini_model_name = "gemini-2.0-flash"
-    _gemini_base_url = "https://generativelanguage.googleapis.com/v1beta"
+    _gemini_model_name = "gemini-2.5-flash-lite"
     _gemini_configured = True
     _gemini_error = ""
-    return True, "Connected (gemini-2.0-flash)"
+    return True, "Connected (gemini-2.5-flash-lite)"
 
 def get_gemini_error():
     return _gemini_error
@@ -113,42 +145,33 @@ def _ask_gemini(user_input, context=""):
     if not is_gemini_active():
         return None
     
-    try:
-        system_prompt = (
-            "You are CrackPlacement AI, a placement preparation assistant for B.Tech students. "
-            "You help with HR interview questions, technical concepts (OOP, DBMS, OS, DSA, Python, Java), "
-            "aptitude preparation, resume tips, and placement strategies. "
-            "Give detailed, well-structured answers with examples. Use markdown formatting with bold headers and bullet points. "
-            "Keep answers focused and practical for interview preparation."
+    system_prompt = (
+        "You are CrackPlacement AI, a placement preparation assistant for B.Tech students. "
+        "You help with HR interview questions, technical concepts (OOP, DBMS, OS, DSA, Python, Java), "
+        "aptitude preparation, resume tips, and placement strategies. "
+        "Give detailed, well-structured answers with examples. Use markdown formatting with bold headers and bullet points. "
+        "Keep answers focused and practical for interview preparation."
+    )
+    
+    if context:
+        prompt = (
+            f"{system_prompt}\n\n"
+            f"Context from student's documents:\n---\n{context}\n---\n\n"
+            f"Answer: {user_input}"
         )
-        
-        if context:
-            prompt = (
-                f"{system_prompt}\n\n"
-                f"The student has uploaded study documents. Here is relevant context:\n"
-                f"---\n{context}\n---\n\n"
-                f"Answer the following question:\n{user_input}"
-            )
-        else:
-            prompt = f"{system_prompt}\n\nStudent's question: {user_input}"
-        
-        return _gemini_request(_gemini_base_url, _gemini_model_name, _gemini_api_key, prompt)
-    except urllib.error.HTTPError as e:
-        if e.code == 429:
-            return "⏳ Rate limit reached. Please wait a minute and try again. The free Gemini tier allows 15 requests per minute."
-        return f"Gemini API error: {e.code}"
-    except Exception as e:
-        return f"Gemini API error: {str(e)}"
+    else:
+        prompt = f"{system_prompt}\n\nStudent's question: {user_input}"
+    
+    result = _gemini_request(prompt)
+    if result:
+        return result
+    return "⏳ AI is busy. Please wait a moment and try again."
 
 def _ask_gemini_raw(prompt):
-    """Send a raw prompt to Gemini without any system prompt. Use for JSON/structured output."""
+    """Send a raw prompt to Gemini. Returns text or None."""
     if not is_gemini_active():
         return None
-    
-    try:
-        return _gemini_request(_gemini_base_url, _gemini_model_name, _gemini_api_key, prompt)
-    except Exception as e:
-        return None
+    return _gemini_request(prompt)
 
 
 # ============================================================

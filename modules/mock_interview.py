@@ -8,18 +8,13 @@ def ai_generate_questions(interview_type, role="Software Engineer"):
         return None
     
     prompt = (
-        f"Generate exactly 5 {interview_type} interview questions for a fresher B.Tech student "
-        f"applying for a {role} position at a top IT company.\n\n"
-        f"Return ONLY a valid JSON array of strings, no extra text:\n"
-        f'["question 1", "question 2", "question 3", "question 4", "question 5"]\n\n'
-        f"Rules:\n"
-        f"- Questions should be realistic and commonly asked\n"
-        f"- Progress from easy to hard\n"
-        f"- For Technical: include coding/concept questions\n"
-        f"- For HR: include situational and behavioral questions"
+        f"Generate 5 {interview_type} interview questions for a fresher B.Tech student "
+        f"applying for {role}. Return ONLY a JSON array of strings, no other text: "
+        f'["question 1", "question 2", "question 3", "question 4", "question 5"]'
     )
     
     try:
+        import re
         response = intent_matcher._ask_gemini_raw(prompt)
         if not response:
             return None
@@ -27,7 +22,9 @@ def ai_generate_questions(interview_type, role="Software Engineer"):
         start = response.find("[")
         end = response.rfind("]") + 1
         if start >= 0 and end > start:
-            return json.loads(response[start:end])
+            json_str = response[start:end]
+            json_str = re.sub(r',\s*\]', ']', json_str)
+            return json.loads(json_str)
     except Exception:
         pass
     return None
